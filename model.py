@@ -37,6 +37,15 @@ class AttentionModel(tf.keras.Model):
         self.dense1 = tf.keras.layers.TimeDistributed(
             tf.keras.layers.Dense(units=512, activation='relu', kernel_initializer='Orthogonal'))
 
+        def get_source_layer1(tensor):
+            return tf.expand_dims(tensor[:, -1, :], axis=1)
+
+        def get_target_layer1(tensor):
+            return tensor[:, :-1, :]
+
+        self.source1 = tf.keras.layers.Lambda(get_source_layer1, output_shape=(-1, 512))
+        self.target1 = tf.keras.layers.Lambda(get_target_layer1, output_shape=(-1, 512))
+
         self.attention1 = tf.keras.layers.MultiHeadAttention(
             num_heads=4, key_dim=512
         )
@@ -70,6 +79,15 @@ class AttentionModel(tf.keras.Model):
 
         self.dense10 = tf.keras.layers.TimeDistributed(
             tf.keras.layers.Dense(units=512, activation='relu', kernel_initializer='Orthogonal'))
+
+        def get_source_layer10(tensor):
+            return tf.expand_dims(tensor[:, -1, :], axis=1)
+
+        def get_target_layer10(tensor):
+            return tensor[:, :-1, :]
+
+        self.source10 = tf.keras.layers.Lambda(get_source_layer10, output_shape=(-1, 512))
+        self.target10 = tf.keras.layers.Lambda(get_target_layer10, output_shape=(-1, 512))
 
         self.attention10 = tf.keras.layers.MultiHeadAttention(
             num_heads=4, key_dim=512
@@ -118,8 +136,10 @@ class AttentionModel(tf.keras.Model):
 
         x1 = self.dense1(x0)  # (3,5,64)
 
-        x2, score1 = self.attention1(tf.expand_dims(x1[:, -1, :], axis=1),
-                                     x1[:, :-1, :],
+        source1 = self.source1(x1)  # (3,1,512)
+        target1 = self.target1(x1)  # (3,4,512)
+
+        x2, score1 = self.attention1(source1, target1,
                                      return_attention_scores=True)  # (3,1,512), (3,4,1,4)
 
         x4 = self.flatten2(x2)  # (3,512)
@@ -137,8 +157,10 @@ class AttentionModel(tf.keras.Model):
 
         x10 = self.dense10(x00)  # (3,5,512)
 
-        x20, score10 = self.attention10(tf.expand_dims(x10[:, -1, :], axis=1),
-                                        x10[:, :-1, :],
+        source10 = self.source10(x10)  # (3.1,512)
+        target10 = self.target10(x10)  # (3,4,512)
+
+        x20, score10 = self.attention10(source10, target10,
                                         return_attention_scores=True)  # (3,5,512), (3,4,5,5)
 
         x40 = self.flatten20(x20)  # (3,512)
