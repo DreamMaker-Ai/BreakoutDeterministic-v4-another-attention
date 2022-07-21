@@ -8,12 +8,14 @@ import tensorflow as tf
 from tqdm import tqdm
 from collections import deque
 
-from model import AttentionModel as MyModel
+# from model import AttentionModel as MyModel
+from model import AttentionModel_2 as MyModel
+
 import util
 
 
-@ray.remote
-# @ray.remote(num_cpus=1)
+# @ray.remote
+@ray.remote(num_cpus=1)
 class Agent:
     def __init__(self, agent_id, env_name, n_frames, trajectory_length, sequence_length):
         self.agent_id = agent_id

@@ -6,3 +6,7 @@ result/
 __pycache__/
 
 attention_model.png
+
+old/
+
+*.py
